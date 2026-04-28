@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Kurumi Tokisaki - Absolute Persistence</title>
+    <title>Dashboard Kurumi Tokisaki - Demo Version</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -89,16 +89,35 @@
 
         .overlay.active { opacity: 1; pointer-events: auto; }
         
-        #loading-screen { background: var(--kurumi-bg); z-index: 999; }
+        #loading-screen { 
+            background: var(--kurumi-bg); 
+            z-index: 999; 
+            transition: opacity 0.4s ease-out;
+        }
+
+        .demo-badge {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: #000;
+            color: #fff;
+            font-size: 8px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            z-index: 200;
+            opacity: 0.5;
+        }
     </style>
 </head>
 <body class="min-h-screen">
 
+    <div class="demo-badge cinzel">DEMO MODE - LOCAL STORAGE</div>
+
     <!-- LOADING SCREEN -->
     <div id="loading-screen" class="fixed inset-0 flex items-center justify-center">
         <div class="text-center">
-            <i class="fas fa-hourglass-half fa-spin text-4xl text-gold mb-4"></i>
-            <p class="cinzel text-xs tracking-widest text-gold">Menyelaraskan Waktu...</p>
+            <i class="fas fa-clock fa-spin text-4xl text-gold mb-4" style="color: #b08d57;"></i>
+            <p class="cinzel text-xs tracking-widest text-gold" style="color: #b08d57;">Menyelaraskan Waktu...</p>
         </div>
     </div>
 
@@ -119,6 +138,7 @@
                 </div>
                 <button onclick="handleLogin()" class="w-full btn-gold py-4 cinzel tracking-widest font-bold">Buka Jurnal</button>
                 <p id="login-error" class="text-red-700 text-xs text-center hidden mt-2">Akses ditolak, Direktur.</p>
+                <p class="text-[9px] text-center text-gray-400 mt-4">Hint: admin </p>
             </div>
         </div>
     </div>
@@ -131,9 +151,9 @@
         <div class="p-8 text-center border-b border-gold/20 flex justify-between items-center">
             <div class="text-left">
                 <h2 class="cinzel text-xl font-bold text-red-900 leading-none">KURUMI</h2>
-                <p class="text-[9px] uppercase tracking-[0.2em] text-gold">Executive</p>
+                <p class="text-[9px] uppercase tracking-[0.2em] text-gold" style="color: #b08d57;">Executive</p>
             </div>
-            <button onclick="toggleSidebar()" class="text-gold"><i class="fas fa-times"></i></button>
+            <button onclick="toggleSidebar()" class="text-gold" style="color: #b08d57;"><i class="fas fa-times"></i></button>
         </div>
 
         <nav class="flex-grow p-6 space-y-2">
@@ -157,13 +177,13 @@
 
     <!-- MAIN CONTENT -->
     <main id="main-content" class="min-h-screen p-6 md:p-12 hidden">
-        <header class="flex items-center justify-between mb-12 border-b-2 border-gold pb-6">
+        <header class="flex items-center justify-between mb-12 border-b-2 border-gold pb-6" style="border-color: #b08d57;">
             <div class="flex items-center space-x-6">
-                <button onclick="toggleSidebar()" class="w-12 h-12 glass-card flex items-center justify-center text-gold">
+                <button onclick="toggleSidebar()" class="w-12 h-12 glass-card flex items-center justify-center text-gold" style="color: #b08d57;">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
                 <div>
-                    <p class="cinzel text-gold text-xs tracking-[0.3em] mb-1">Agenda Kerja</p>
+                    <p class="cinzel text-gold text-xs tracking-[0.3em] mb-1" style="color: #b08d57;">Agenda Kerja</p>
                     <h1 id="current-date" class="playfair text-2xl md:text-4xl font-bold text-gray-800 italic">...</h1>
                 </div>
             </div>
@@ -172,7 +192,8 @@
             </button>
         </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12" id="stats-area">
+        <!-- STATS -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
             <div class="glass-card p-6 rounded-sm ornament-corner">
                 <p class="text-[10px] uppercase font-bold text-gray-400 mb-1">Total Agenda</p>
                 <p class="text-3xl cinzel font-bold text-gray-800" id="stat-total">0</p>
@@ -187,23 +208,24 @@
             </div>
         </div>
 
+        <!-- LIST -->
         <div id="task-container" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8"></div>
         <div id="empty-state" class="hidden flex flex-col items-center py-20 opacity-40">
-            <i class="fas fa-feather-alt text-4xl mb-4 text-gold"></i>
+            <i class="fas fa-feather-alt text-4xl mb-4 text-gold" style="color: #b08d57;"></i>
             <p class="cinzel text-lg italic">Belum ada agenda yang tercatat.</p>
         </div>
     </main>
 
-    <!-- MODAL ADD TASK -->
+    <!-- MODAL -->
     <div id="task-modal" class="fixed inset-0 z-[110] bg-white/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
         <div class="glass-card ornament-corner p-10 w-full max-w-lg">
-            <h3 class="cinzel text-2xl mb-8 text-red-900 font-bold border-b border-gold pb-2">Agenda Baru</h3>
+            <h3 class="cinzel text-2xl mb-8 text-red-900 font-bold border-b border-gold pb-2" style="border-color: #b08d57;">Agenda Baru</h3>
             <form id="task-form" class="space-y-5">
                 <input type="text" id="task-title" required class="w-full input-elegant" placeholder="Judul Agenda">
                 <div class="grid grid-cols-2 gap-4">
                     <select id="task-priority" class="w-full input-elegant bg-transparent">
                         <option value="high">Penting (Tinggi)</option>
-                        <option value="medium">Menengah</option>
+                        <option value="medium" selected>Menengah</option>
                         <option value="low">Rendah</option>
                     </select>
                     <input type="datetime-local" id="task-time" required class="w-full input-elegant text-sm">
@@ -217,26 +239,24 @@
         </div>
     </div>
 
-    <!-- MODAL PROFILE -->
+    <!-- PROFILE MODAL -->
     <div id="profile-modal" class="fixed inset-0 z-[110] bg-white/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
         <div class="glass-card ornament-corner p-10 w-full max-w-md text-center">
-            <div class="w-20 h-20 rounded-full border-2 border-gold mx-auto mb-4 flex items-center justify-center text-gold font-bold text-2xl">KT</div>
+            <div class="w-20 h-20 rounded-full border-2 border-gold mx-auto mb-4 flex items-center justify-center text-gold font-bold text-2xl" style="border-color: #b08d57; color: #b08d57;">KT</div>
             <h3 class="cinzel text-xl text-red-900 font-bold">Kurumi Tokisaki</h3>
-            <p class="playfair italic text-gold">Direktur Utama</p>
+            <p class="playfair italic text-gold" style="color: #b08d57;">Direktur Utama</p>
+            <p class="text-[10px] mt-4 text-gray-400 uppercase tracking-widest">Akses Level: SSS</p>
             <button onclick="closeProfile()" class="mt-8 w-full btn-gold py-2 cinzel text-xs">Tutup</button>
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, onSnapshot, addDoc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    <script>
+        // --- LOGIKA DEMO (LocalStorage) ---
+        const STORAGE_KEY = 'kurumi_demo_tasks';
+        const AUTH_KEY = 'kurumi_demo_auth';
 
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'kurumi-absolute-final';
+        // State Manager
+        let tasks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 
         const dom = {
             loading: document.getElementById('loading-screen'),
@@ -248,112 +268,109 @@
             date: document.getElementById('current-date')
         };
 
-        let activeUnsubscribe = null;
+        // Inisialisasi Aplikasi
+        window.onload = () => {
+            // Animasi loading buatan (1 detik biar keren)
+            setTimeout(() => {
+                dom.loading.style.opacity = '0';
+                setTimeout(() => {
+                    dom.loading.classList.add('hidden');
+                    checkAuth();
+                }, 400);
+            }, 1000);
+        };
 
-        // AUTH CONTROL
-        onAuthStateChanged(auth, (user) => {
-            dom.loading.classList.add('hidden');
-            if (user && localStorage.getItem('kurumi_active_session') === 'true') {
-                initApp(user);
+        function checkAuth() {
+            const isLoggedIn = localStorage.getItem(AUTH_KEY) === 'true';
+            if (isLoggedIn) {
+                showMain();
             } else {
                 dom.login.classList.remove('hidden');
-                dom.main.classList.add('hidden');
             }
-        });
+        }
 
-        async function initApp(user) {
+        function showMain() {
             dom.login.classList.add('hidden');
             dom.main.classList.remove('hidden');
             dom.date.innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-            
-            // Clean up old listener if exists
-            if (activeUnsubscribe) activeUnsubscribe();
-
-            // REAL-TIME SYNC
-            const colRef = collection(db, 'artifacts', appId, 'users', user.uid, 'schedules');
-            activeUnsubscribe = onSnapshot(colRef, (snap) => {
-                const tasks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                render(tasks);
-            }, (error) => {
-                console.error("Firestore error:", error);
-            });
+            render();
         }
 
-        window.handleLogin = async () => {
-            const u = document.getElementById('login-user').value;
-            const p = document.getElementById('login-pass').value;
-            if (u === 'admin' && p === 'admin123') {
-                localStorage.setItem('kurumi_active_session', 'true');
-                await signInAnonymously(auth);
+        window.handleLogin = () => {
+            const user = document.getElementById('login-user').value;
+            if (user.trim() !== "") {
+                localStorage.setItem(AUTH_KEY, 'true');
+                showMain();
             } else {
                 document.getElementById('login-error').classList.remove('hidden');
             }
         };
 
-        window.handleLogout = async () => {
-            localStorage.removeItem('kurumi_active_session');
-            if (activeUnsubscribe) activeUnsubscribe();
-            await signOut(auth);
+        window.handleLogout = () => {
+            localStorage.removeItem(AUTH_KEY);
             location.reload();
         };
 
-        // CRUD OPERATIONS
-        dom.form.onsubmit = async (e) => {
+        // CRUD Simulasian
+        dom.form.onsubmit = (e) => {
             e.preventDefault();
-            const user = auth.currentUser;
-            if (!user) return;
-
-            const payload = {
+            const newTask = {
+                id: Date.now().toString(),
                 title: document.getElementById('task-title').value,
                 priority: document.getElementById('task-priority').value,
                 time: document.getElementById('task-time').value,
                 desc: document.getElementById('task-desc').value,
-                status: 'pending',
-                ts: Date.now()
+                status: 'pending'
             };
-
-            await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'schedules'), payload);
+            tasks.push(newTask);
+            saveAndRender();
             closeModal();
             dom.form.reset();
         };
 
-        window.toggleTask = async (id, currentStatus) => {
-            const user = auth.currentUser;
-            const docRef = doc(db, 'artifacts', appId, 'users', user.uid, 'schedules', id);
-            await updateDoc(docRef, { status: currentStatus === 'pending' ? 'done' : 'pending' });
+        window.toggleTask = (id) => {
+            tasks = tasks.map(t => t.id === id ? {...t, status: t.status === 'pending' ? 'done' : 'pending'} : t);
+            saveAndRender();
         };
 
-        window.deleteTask = async (id) => {
-            const user = auth.currentUser;
-            const docRef = doc(db, 'artifacts', appId, 'users', user.uid, 'schedules', id);
-            await deleteDoc(docRef);
+        window.deleteTask = (id) => {
+            tasks = tasks.filter(t => t.id !== id);
+            saveAndRender();
         };
 
-        function render(tasks) {
+        function saveAndRender() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+            render();
+        }
+
+        function render() {
             dom.container.innerHTML = '';
             let stats = { total: tasks.length, high: 0, done: 0 };
-            
+
             if (tasks.length === 0) dom.empty.classList.remove('hidden');
             else dom.empty.classList.add('hidden');
 
-            tasks.sort((a,b) => new Date(a.time) - new Date(b.time)).forEach(t => {
+            // Sort berdasarkan waktu terdekat
+            const sorted = [...tasks].sort((a,b) => new Date(a.time) - new Date(b.time));
+
+            sorted.forEach(t => {
                 if (t.priority === 'high') stats.high++;
                 if (t.status === 'done') stats.done++;
 
                 const card = document.createElement('div');
-                card.className = `glass-card p-6 rounded-sm border-t-4 ${t.status === 'done' ? 'opacity-50' : ''} priority-${t.priority}`;
+                card.className = `glass-card p-6 rounded-sm border-t-4 transition-all duration-300 ${t.status === 'done' ? 'opacity-40 grayscale' : ''} priority-${t.priority}`;
                 card.innerHTML = `
                     <div class="flex justify-between items-start mb-4">
-                        <span class="text-[9px] font-bold uppercase tracking-widest text-gold bg-gold/5 px-2 py-1 border border-gold/20">${t.priority}</span>
+                        <span class="text-[9px] font-bold uppercase tracking-widest text-gold bg-gold/5 px-2 py-1 border border-gold/20" style="color: #b08d57;">${t.priority}</span>
                         <div class="flex space-x-4">
-                            <button onclick="toggleTask('${t.id}', '${t.status}')" class="text-gray-400 hover:text-green-700">
+                            <button onclick="toggleTask('${t.id}')" class="text-gray-400 hover:text-green-700">
                                 <i class="${t.status === 'done' ? 'fas fa-check-circle text-green-600' : 'far fa-circle'}"></i>
                             </button>
                             <button onclick="deleteTask('${t.id}')" class="text-gray-400 hover:text-red-700"><i class="fas fa-trash-alt text-xs"></i></button>
                         </div>
                     </div>
-                    <h4 class="cinzel text-lg font-bold mb-1 ${t.status === 'done' ? 'line-through text-gray-400' : 'text-gray-800'}">${t.title}</h4>
-                    <p class="text-xs text-gray-500 mb-4 line-clamp-2">${t.desc || '-'}</p>
+                    <h4 class="cinzel text-lg font-bold mb-1 ${t.status === 'done' ? 'line-through' : 'text-gray-800'}">${t.title}</h4>
+                    <p class="text-xs text-gray-500 mb-4 line-clamp-2 italic">${t.desc || '-'}</p>
                     <div class="flex items-center text-red-900 pt-4 border-t border-gold/10 text-[11px] font-bold">
                         <i class="far fa-clock mr-2"></i> ${new Date(t.time).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}
                     </div>
@@ -366,8 +383,11 @@
             document.getElementById('stat-done').innerText = stats.done;
         }
 
-        // UI HELPERS
-        window.toggleSidebar = () => { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebar-overlay').classList.toggle('active'); };
+        // UI Helpers
+        window.toggleSidebar = () => { 
+            document.getElementById('sidebar').classList.toggle('open'); 
+            document.getElementById('sidebar-overlay').classList.toggle('active'); 
+        };
         window.openModal = () => document.getElementById('task-modal').classList.remove('hidden');
         window.closeModal = () => document.getElementById('task-modal').classList.add('hidden');
         window.openProfile = () => document.getElementById('profile-modal').classList.remove('hidden');
