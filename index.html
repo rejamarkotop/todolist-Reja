@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Kurumi Tokisaki - Absolute Persistence</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Poppins:wght@300;400;600&display=swap');
+
+        :root {
+            --kurumi-accent: #a31d1d;
+            --kurumi-gold: #b08d57;
+            --kurumi-bg: #fdfbf7;
+            --kurumi-sidebar: #f7f3eb;
+            --kurumi-text: #2c2c2c;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--kurumi-bg);
+            background-image: url("https://www.transparenttextures.com/patterns/cream-paper.png");
+            color: var(--kurumi-text);
+            overflow-x: hidden;
+        }
+
+        .cinzel { font-family: 'Cinzel', serif; }
+        .playfair { font-family: 'Playfair Display', serif; }
+
+        .ornament-corner {
+            position: relative;
+            border: 1px solid rgba(176, 141, 87, 0.3);
+        }
+
+        .ornament-corner::before {
+            content: "✦";
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            color: var(--kurumi-gold);
+            font-size: 1.2rem;
+            background: var(--kurumi-bg);
+            padding: 0 5px;
+        }
+
+        #sidebar {
+            background-color: var(--kurumi-sidebar);
+            border-right: 2px solid var(--kurumi-gold);
+            background-image: url("https://www.transparenttextures.com/patterns/paper-fibers.png");
+            transform: translateX(-100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #sidebar.open { transform: translateX(0); }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--kurumi-gold);
+            box-shadow: 5px 5px 15px rgba(176, 141, 87, 0.1);
+        }
+
+        .btn-gold {
+            background: var(--kurumi-gold);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .btn-gold:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+        .priority-high { border-top: 4px solid #cc0000; }
+        .priority-medium { border-top: 4px solid #d4a017; }
+        .priority-low { border-top: 4px solid #4a773c; }
+
+        .input-elegant {
+            background: rgba(255, 255, 255, 0.5);
+            border-bottom: 2px solid var(--kurumi-gold);
+            padding: 10px;
+            outline: none;
+        }
+
+        .overlay {
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(2px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+
+        .overlay.active { opacity: 1; pointer-events: auto; }
+        
+        #loading-screen { background: var(--kurumi-bg); z-index: 999; }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- LOADING SCREEN -->
+    <div id="loading-screen" class="fixed inset-0 flex items-center justify-center">
+        <div class="text-center">
+            <i class="fas fa-hourglass-half fa-spin text-4xl text-gold mb-4"></i>
+            <p class="cinzel text-xs tracking-widest text-gold">Menyelaraskan Waktu...</p>
+        </div>
+    </div>
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 hidden">
+        <div class="glass-card ornament-corner p-10 w-full max-w-md text-center">
+            <h1 class="cinzel text-3xl mb-1 text-red-900 tracking-widest font-bold">ZAFKIEL</h1>
+            <p class="playfair italic text-gold mb-8">Sistem Informasi Direktur</p>
+            
+            <div class="space-y-6 text-left">
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest font-bold text-gray-500 mb-1">Username</label>
+                    <input type="text" id="login-user" class="w-full input-elegant" placeholder="admin">
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest font-bold text-gray-500 mb-1">Sandi Akses</label>
+                    <input type="password" id="login-pass" class="w-full input-elegant" placeholder="••••••••">
+                </div>
+                <button onclick="handleLogin()" class="w-full btn-gold py-4 cinzel tracking-widest font-bold">Buka Jurnal</button>
+                <p id="login-error" class="text-red-700 text-xs text-center hidden mt-2">Akses ditolak, Direktur.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- OVERLAY -->
+    <div id="sidebar-overlay" class="overlay fixed inset-0 z-[45]" onclick="toggleSidebar()"></div>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="fixed top-0 left-0 h-screen w-72 z-50 flex flex-col">
+        <div class="p-8 text-center border-b border-gold/20 flex justify-between items-center">
+            <div class="text-left">
+                <h2 class="cinzel text-xl font-bold text-red-900 leading-none">KURUMI</h2>
+                <p class="text-[9px] uppercase tracking-[0.2em] text-gold">Executive</p>
+            </div>
+            <button onclick="toggleSidebar()" class="text-gold"><i class="fas fa-times"></i></button>
+        </div>
+
+        <nav class="flex-grow p-6 space-y-2">
+            <a href="#" onclick="toggleSidebar()" class="flex items-center space-x-4 p-3 rounded bg-gold/10 text-red-900 font-bold">
+                <i class="fas fa-home w-5"></i><span class="text-sm">Dashboard</span>
+            </a>
+            <a href="#" onclick="toggleSidebar(); openModal();" class="flex items-center space-x-4 p-3 text-gray-600 hover:bg-gold/5 transition">
+                <i class="fas fa-plus-circle w-5"></i><span class="text-sm">Bikin Tugas</span>
+            </a>
+            <a href="#" onclick="toggleSidebar(); openProfile();" class="flex items-center space-x-4 p-3 text-gray-600 hover:bg-gold/5 transition">
+                <i class="fas fa-user-circle w-5"></i><span class="text-sm">Profile Direktur</span>
+            </a>
+        </nav>
+
+        <div class="p-8 border-t border-gold/20 bg-gold/5">
+            <button onclick="handleLogout()" class="text-xs text-red-700 font-bold flex items-center space-x-2">
+                <i class="fas fa-power-off"></i><span>Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main id="main-content" class="min-h-screen p-6 md:p-12 hidden">
+        <header class="flex items-center justify-between mb-12 border-b-2 border-gold pb-6">
+            <div class="flex items-center space-x-6">
+                <button onclick="toggleSidebar()" class="w-12 h-12 glass-card flex items-center justify-center text-gold">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <div>
+                    <p class="cinzel text-gold text-xs tracking-[0.3em] mb-1">Agenda Kerja</p>
+                    <h1 id="current-date" class="playfair text-2xl md:text-4xl font-bold text-gray-800 italic">...</h1>
+                </div>
+            </div>
+            <button onclick="openModal()" class="hidden md:flex btn-gold px-8 py-3 cinzel font-bold text-sm tracking-widest items-center space-x-2">
+                <i class="fas fa-pen-nib"></i><span>Agenda Baru</span>
+            </button>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12" id="stats-area">
+            <div class="glass-card p-6 rounded-sm ornament-corner">
+                <p class="text-[10px] uppercase font-bold text-gray-400 mb-1">Total Agenda</p>
+                <p class="text-3xl cinzel font-bold text-gray-800" id="stat-total">0</p>
+            </div>
+            <div class="glass-card p-6 rounded-sm ornament-corner">
+                <p class="text-[10px] uppercase font-bold text-red-700 mb-1">Prioritas Tinggi</p>
+                <p class="text-3xl cinzel font-bold text-red-800" id="stat-high">0</p>
+            </div>
+            <div class="glass-card p-6 rounded-sm ornament-corner">
+                <p class="text-[10px] uppercase font-bold text-green-700 mb-1">Selesai</p>
+                <p class="text-3xl cinzel font-bold text-green-800" id="stat-done">0</p>
+            </div>
+        </div>
+
+        <div id="task-container" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8"></div>
+        <div id="empty-state" class="hidden flex flex-col items-center py-20 opacity-40">
+            <i class="fas fa-feather-alt text-4xl mb-4 text-gold"></i>
+            <p class="cinzel text-lg italic">Belum ada agenda yang tercatat.</p>
+        </div>
+    </main>
+
+    <!-- MODAL ADD TASK -->
+    <div id="task-modal" class="fixed inset-0 z-[110] bg-white/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="glass-card ornament-corner p-10 w-full max-w-lg">
+            <h3 class="cinzel text-2xl mb-8 text-red-900 font-bold border-b border-gold pb-2">Agenda Baru</h3>
+            <form id="task-form" class="space-y-5">
+                <input type="text" id="task-title" required class="w-full input-elegant" placeholder="Judul Agenda">
+                <div class="grid grid-cols-2 gap-4">
+                    <select id="task-priority" class="w-full input-elegant bg-transparent">
+                        <option value="high">Penting (Tinggi)</option>
+                        <option value="medium">Menengah</option>
+                        <option value="low">Rendah</option>
+                    </select>
+                    <input type="datetime-local" id="task-time" required class="w-full input-elegant text-sm">
+                </div>
+                <textarea id="task-desc" rows="2" class="w-full input-elegant" placeholder="Keterangan singkat..."></textarea>
+                <div class="flex space-x-4 pt-4">
+                    <button type="button" onclick="closeModal()" class="flex-1 cinzel text-gray-400">Batal</button>
+                    <button type="submit" class="flex-[2] btn-gold py-3 cinzel font-bold tracking-widest">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL PROFILE -->
+    <div id="profile-modal" class="fixed inset-0 z-[110] bg-white/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="glass-card ornament-corner p-10 w-full max-w-md text-center">
+            <div class="w-20 h-20 rounded-full border-2 border-gold mx-auto mb-4 flex items-center justify-center text-gold font-bold text-2xl">KT</div>
+            <h3 class="cinzel text-xl text-red-900 font-bold">Kurumi Tokisaki</h3>
+            <p class="playfair italic text-gold">Direktur Utama</p>
+            <button onclick="closeProfile()" class="mt-8 w-full btn-gold py-2 cinzel text-xs">Tutup</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, onSnapshot, addDoc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'kurumi-absolute-final';
+
+        const dom = {
+            loading: document.getElementById('loading-screen'),
+            login: document.getElementById('login-screen'),
+            main: document.getElementById('main-content'),
+            container: document.getElementById('task-container'),
+            form: document.getElementById('task-form'),
+            empty: document.getElementById('empty-state'),
+            date: document.getElementById('current-date')
+        };
+
+        let activeUnsubscribe = null;
+
+        // AUTH CONTROL
+        onAuthStateChanged(auth, (user) => {
+            dom.loading.classList.add('hidden');
+            if (user && localStorage.getItem('kurumi_active_session') === 'true') {
+                initApp(user);
+            } else {
+                dom.login.classList.remove('hidden');
+                dom.main.classList.add('hidden');
+            }
+        });
+
+        async function initApp(user) {
+            dom.login.classList.add('hidden');
+            dom.main.classList.remove('hidden');
+            dom.date.innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            
+            // Clean up old listener if exists
+            if (activeUnsubscribe) activeUnsubscribe();
+
+            // REAL-TIME SYNC
+            const colRef = collection(db, 'artifacts', appId, 'users', user.uid, 'schedules');
+            activeUnsubscribe = onSnapshot(colRef, (snap) => {
+                const tasks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                render(tasks);
+            }, (error) => {
+                console.error("Firestore error:", error);
+            });
+        }
+
+        window.handleLogin = async () => {
+            const u = document.getElementById('login-user').value;
+            const p = document.getElementById('login-pass').value;
+            if (u === 'admin' && p === 'admin123') {
+                localStorage.setItem('kurumi_active_session', 'true');
+                await signInAnonymously(auth);
+            } else {
+                document.getElementById('login-error').classList.remove('hidden');
+            }
+        };
+
+        window.handleLogout = async () => {
+            localStorage.removeItem('kurumi_active_session');
+            if (activeUnsubscribe) activeUnsubscribe();
+            await signOut(auth);
+            location.reload();
+        };
+
+        // CRUD OPERATIONS
+        dom.form.onsubmit = async (e) => {
+            e.preventDefault();
+            const user = auth.currentUser;
+            if (!user) return;
+
+            const payload = {
+                title: document.getElementById('task-title').value,
+                priority: document.getElementById('task-priority').value,
+                time: document.getElementById('task-time').value,
+                desc: document.getElementById('task-desc').value,
+                status: 'pending',
+                ts: Date.now()
+            };
+
+            await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'schedules'), payload);
+            closeModal();
+            dom.form.reset();
+        };
+
+        window.toggleTask = async (id, currentStatus) => {
+            const user = auth.currentUser;
+            const docRef = doc(db, 'artifacts', appId, 'users', user.uid, 'schedules', id);
+            await updateDoc(docRef, { status: currentStatus === 'pending' ? 'done' : 'pending' });
+        };
+
+        window.deleteTask = async (id) => {
+            const user = auth.currentUser;
+            const docRef = doc(db, 'artifacts', appId, 'users', user.uid, 'schedules', id);
+            await deleteDoc(docRef);
+        };
+
+        function render(tasks) {
+            dom.container.innerHTML = '';
+            let stats = { total: tasks.length, high: 0, done: 0 };
+            
+            if (tasks.length === 0) dom.empty.classList.remove('hidden');
+            else dom.empty.classList.add('hidden');
+
+            tasks.sort((a,b) => new Date(a.time) - new Date(b.time)).forEach(t => {
+                if (t.priority === 'high') stats.high++;
+                if (t.status === 'done') stats.done++;
+
+                const card = document.createElement('div');
+                card.className = `glass-card p-6 rounded-sm border-t-4 ${t.status === 'done' ? 'opacity-50' : ''} priority-${t.priority}`;
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-[9px] font-bold uppercase tracking-widest text-gold bg-gold/5 px-2 py-1 border border-gold/20">${t.priority}</span>
+                        <div class="flex space-x-4">
+                            <button onclick="toggleTask('${t.id}', '${t.status}')" class="text-gray-400 hover:text-green-700">
+                                <i class="${t.status === 'done' ? 'fas fa-check-circle text-green-600' : 'far fa-circle'}"></i>
+                            </button>
+                            <button onclick="deleteTask('${t.id}')" class="text-gray-400 hover:text-red-700"><i class="fas fa-trash-alt text-xs"></i></button>
+                        </div>
+                    </div>
+                    <h4 class="cinzel text-lg font-bold mb-1 ${t.status === 'done' ? 'line-through text-gray-400' : 'text-gray-800'}">${t.title}</h4>
+                    <p class="text-xs text-gray-500 mb-4 line-clamp-2">${t.desc || '-'}</p>
+                    <div class="flex items-center text-red-900 pt-4 border-t border-gold/10 text-[11px] font-bold">
+                        <i class="far fa-clock mr-2"></i> ${new Date(t.time).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}
+                    </div>
+                `;
+                dom.container.appendChild(card);
+            });
+
+            document.getElementById('stat-total').innerText = stats.total;
+            document.getElementById('stat-high').innerText = stats.high;
+            document.getElementById('stat-done').innerText = stats.done;
+        }
+
+        // UI HELPERS
+        window.toggleSidebar = () => { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebar-overlay').classList.toggle('active'); };
+        window.openModal = () => document.getElementById('task-modal').classList.remove('hidden');
+        window.closeModal = () => document.getElementById('task-modal').classList.add('hidden');
+        window.openProfile = () => document.getElementById('profile-modal').classList.remove('hidden');
+        window.closeProfile = () => document.getElementById('profile-modal').classList.add('hidden');
+    </script>
+</body>
+</html>
